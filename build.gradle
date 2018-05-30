@@ -1,0 +1,13 @@
+apply plugin: 'idea'
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
+
+}
