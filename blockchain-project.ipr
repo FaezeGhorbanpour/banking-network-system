@@ -7,10 +7,13 @@
       <entry name=".+\.(gif|png|jpeg|jpg)"/>
     </resourceExtensions>
     <wildcardResourcePatterns>
-      <entry name="!?*.java"/>
+      <entry name="!?*.class"/>
+      <entry name="!?*.scala"/>
       <entry name="!?*.groovy"/>
+      <entry name="!?*.java"/>
     </wildcardResourcePatterns>
     <annotationProcessing enabled="false" useClasspath="true"/>
+    <bytecodeTargetLevel target="1.8"/>
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright/>

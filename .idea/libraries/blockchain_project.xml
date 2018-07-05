@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="blockchain-project">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/build/libs/blockchain-project.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
