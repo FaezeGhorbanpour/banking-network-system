@@ -2,14 +2,29 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Block {
-	
-	public String hash;
-	public String previousHash; 
-	public String merkleRoot;
-	public ArrayList<Transaction> transactions = new ArrayList<Transaction>(); //our data will be a simple message.
-	public long timeStamp; //as number of milliseconds since 1/1/1970.
-	public int nonce;
-	
+
+	private String hash;
+	private String previousHash;
+	private String merkleRoot;
+	private ArrayList<Transaction> transactions = new ArrayList<Transaction>(); //our data will be a simple message.
+	private long timeStamp; //as number of milliseconds since 1/1/1970.
+	private int nonce;
+
+
+	public String getPreviousHash() {
+		return previousHash;
+	}
+
+	public ArrayList<Transaction> getTransactions() {
+
+		return transactions;
+	}
+
+	public String getHash() {
+
+		return hash;
+	}
+
 	//Block Constructor.  
 	public Block(String previousHash ) {
 		this.previousHash = previousHash;
@@ -55,5 +70,6 @@ public class Block {
 		System.out.println("Transaction Successfully added to Block");
 		return true;
 	}
-	
+
+
 }

@@ -23,7 +23,8 @@ public class MainBank {
     }
 
     public void saveDB() {
-
+        String save = "insert into mainManage values ('" + user + "','" + password + "');";
+        engine.p1.getTable(save);
     }
 
     public void NumberOfBlock(int numberOfBlock) {

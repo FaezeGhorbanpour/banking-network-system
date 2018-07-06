@@ -9,6 +9,7 @@ public class Customer {
         if (checkUser(id)) {
             this.id = id;
             this.password = password;
+            this.bank = bank;
             this.wallet = new Wallet();
             saveDB();
         }
@@ -21,7 +22,16 @@ public class Customer {
 
 
     public void saveDB() {
+        String save = "insert into client values ('" + id + "','" + password + "','" + bank.getName() + "','" + wallet.getId() + "');";
+        engine.p1.getTable(save);
+    }
 
+    public float getBalance() {
+        return wallet.getBalance();
+    }
+
+    public Wallet getWallet() {
+        return wallet;
     }
 
 }

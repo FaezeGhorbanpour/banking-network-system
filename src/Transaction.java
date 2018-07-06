@@ -1,5 +1,7 @@
-import java.security.*;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Transaction {
 	
@@ -8,7 +10,8 @@ public class Transaction {
 	public PublicKey reciepient; //Recipients address/public key.
 	public float value; //Contains the amount we wish to send to the recipient.
 	public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
-	
+	private long timeStamp;
+	private float cost;
 	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
 	public ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 	
@@ -20,11 +23,13 @@ public class Transaction {
 		this.reciepient = to;
 		this.value = value;
 		this.inputs = inputs;
+		this.timeStamp = new Date().getTime();
+		this.cost = NoobChain.mainManager.getTransactionFee();
 	}
 	
 	public boolean processTransaction() {
-		
-		if(verifySignature() == false) {
+
+		if (!verifySignature()) {
 			System.out.println("#Transaction Signature failed to verify");
 			return false;
 		}
@@ -42,7 +47,7 @@ public class Transaction {
 		}
 		
 		//Generate transaction outputs:
-		float leftOver = getInputsValue() - value; //get value of inputs then the left over change:
+		float leftOver = getInputsValue() - value - cost;//TODO is this correct? subtracting fee!
 		transactionId = calulateHash();
 		outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
 		outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender		
@@ -96,4 +101,13 @@ public class Transaction {
 				Float.toString(value) + sequence
 				);
 	}
+
+	public String toString() {
+		return "Sender Public Key: " + sender + "\n"
+				+ "Receiver Public Key: " + reciepient + "\n"
+				+ "Value: " + value + "\n"
+				+ "Time: " + timeStamp + "\n"
+				+ "Cost: " + cost + "\n";
+	}
+
 }

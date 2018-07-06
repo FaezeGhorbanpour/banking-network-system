@@ -1,14 +1,10 @@
-public class Bank {
+public class Bank implements Runnable {
 
-    public String user;
-    public String password;
-    public String name;
+    private String user;
+    private String password;
+    private String name;
     private Wallet wallet;
     private String token;
-
-    public Bank() {
-
-    }
 
     //Bank Constructor.
     public Bank(String user, String password, String name, String token) {
@@ -20,7 +16,28 @@ public class Bank {
         saveDB();
     }
 
-    public void saveDB() {
-
+    public Wallet getWallet() {
+        return wallet;
     }
+
+    public void saveDB() {
+        String save = "insert into bank values ('" + user + "','" + password + "','" + name + "','" + token + "','" + wallet.getId() + "');";
+        engine.p1.getTable(save);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void run() {
+        System.out.println("Bank Thread !");
+        mine();
+    }
+
+    private void mine() {
+        //TODO
+    }
+
+
 }
