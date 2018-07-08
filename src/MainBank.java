@@ -9,16 +9,18 @@ public class MainBank {
     private ArrayList<String> tokens;
 
     private int difficulty;
-    private int numberOfBlock;
+    private int numberOfTransaction;
     private float transactionFee;
     private float miningReward;
     private float maxLoan;
+    private Wallet wallet;
 
 
     public MainBank(String user, String password) {
         this.user = user;
         this.password = password;
         tokens = new ArrayList<>();
+        wallet = new Wallet();
         saveDB();
     }
 
@@ -27,8 +29,8 @@ public class MainBank {
         engine.p1.getTable(save);
     }
 
-    public void NumberOfBlock(int numberOfBlock) {
-        this.numberOfBlock = numberOfBlock;
+    public void NumberOfTransaction(int numberOfBlock) {
+        this.numberOfTransaction = numberOfBlock;
         System.out.println("Number of Transaction In Block: " + numberOfBlock);
     }
 
@@ -87,8 +89,8 @@ public class MainBank {
         return difficulty;
     }
 
-    public int getNumberOfBlock() {
-        return numberOfBlock;
+    public int getNumberOfTransaction() {
+        return numberOfTransaction;
     }
 
     public float getTransactionFee() {
@@ -101,5 +103,9 @@ public class MainBank {
 
     public float getMaxLoan() {
         return maxLoan;
+    }
+
+    public Wallet getWallet() {
+        return wallet;
     }
 }

@@ -9,7 +9,7 @@ public class Transaction {
 	public PublicKey sender; //Senders address/public key.
 	public PublicKey reciepient; //Recipients address/public key.
 	public float value; //Contains the amount we wish to send to the recipient.
-	public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
+	public byte[] sign; //This is to prevent anybody else from spending funds in our wallet.
 	private long timeStamp;
 	private float cost;
 	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
@@ -56,10 +56,10 @@ public class Transaction {
 		for(TransactionOutput o : outputs) {
 			NoobChain.UTXOs.put(o.id , o);
 		}
-		
-		//Remove transaction inputs from UTXO lists as spent:
+
+		//Remove transaction inputs from utxo lists as spent:
 		for(TransactionInput i : inputs) {
-			if(i.UTXO == null) continue; //if Transaction can't be found skip it 
+			if (i.UTXO == null) continue; //if Transaction can't be found skip it
 			NoobChain.UTXOs.remove(i.UTXO.id);
 		}
 		
@@ -77,12 +77,12 @@ public class Transaction {
 	
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-		signature = StringUtil.applyECDSASig(privateKey,data);		
+		sign = StringUtil.applyECDSASig(privateKey, data);
 	}
 	
 	public boolean verifySignature() {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-		return StringUtil.verifyECDSASig(sender, data, signature);
+		return StringUtil.verifyECDSASig(sender, data, sign);
 	}
 	
 	public float getOutputsValue() {

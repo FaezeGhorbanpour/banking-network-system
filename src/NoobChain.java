@@ -1,10 +1,6 @@
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +43,7 @@ public class NoobChain {
         }
         else if (input.contains("Number of Transaction In Block")) {
             String[] strings = input.split(" ");
-            mainManager.NumberOfBlock(Integer.parseInt(strings[5]));
+            mainManager.NumberOfTransaction(Integer.parseInt(strings[5]));
         }
         else if (input.contains("Transaction Fee")) {
             String[] strings = input.split(" ");
@@ -76,7 +72,7 @@ public class NoobChain {
 
             if (input.contains("Get")) {
                 String[] strings = input.split(" ");
-                readJson(strings[1]);
+                GsonReader.readJson(strings[1]);
             }
 
             else if (input.contains("Create Bank")) {
@@ -132,10 +128,9 @@ public class NoobChain {
                     float payment = Float.parseFloat(strings[1]);
                     int receiverWalletID = Integer.parseInt(strings[3]);
                     PublicKey recevierpk = getWalletPubKey(receiverWalletID);
-                    Block block = makeBlock(payment, recevierpk, onlineCustomer.getWallet());
-                    if (block != null)
-                        addBlock(block);
-
+                    Transaction transaction = makeTransaction(payment, recevierpk, onlineCustomer.getWallet());
+                    if (transaction != null)
+                        Bank.rawTransaction.add(transaction);
                 }
             }
             else if (input.contains("Send Transfer")) {
@@ -146,9 +141,9 @@ public class NoobChain {
                 String receiverPUK = strings[6];
                 Wallet senderWallet = getWallet(senderPUK);
                 Wallet receiverWallet = getWallet(receiverPUK);
-                Block block = makeBlock(payment, receiverWallet.publicKey, senderWallet);
-                if (block != null)
-                    addBlock(block);
+                Transaction transaction = makeTransaction(payment, receiverWallet.publicKey, senderWallet);
+                if (transaction != null)
+                    Bank.rawTransaction.add(transaction);
 
             }
             else if (input.contains("Request Loan")) {
@@ -161,9 +156,10 @@ public class NoobChain {
                     }
                     String bankName = strings[4];
                     Bank bank = getBank(bankName);
-                    Block block = makeBlock(loan, onlineCustomer.getWallet().publicKey, bank.getWallet());
-                    if (block != null)
-                        addBlock(block);
+                    Transaction transaction = makeTransaction(loan, onlineCustomer.getWallet().publicKey, bank.getWallet());
+                    ArrayList<Transaction> trs = new ArrayList<>();
+                    trs.add(transaction);
+                    Bank.bankLoan.put(bankName, trs);
 
                 }
                 else {
@@ -234,14 +230,6 @@ public class NoobChain {
     public static int login(String user, String password) {
         int success = engine.checkLogin(user, password);
         return success;
-    }
-
-    public static void readJson(String fileName) throws IOException {
-        try (Reader reader = new InputStreamReader(new FileInputStream(fileName))) {
-            Gson gson = new GsonBuilder().create();
-//            Person p = gson.fromJson(reader, Person.class);
-//            System.out.println(p);
-        }
     }
 
     public static Boolean isChainValid() {
@@ -337,16 +325,11 @@ public class NoobChain {
         return null;
     }
 
-    public static Block makeBlock(float payment, PublicKey receiverWalletPubkey, Wallet senderWallet) {
+    public static Transaction makeTransaction(float payment, PublicKey receiverWalletPubkey, Wallet senderWallet) {
         Transaction transaction = senderWallet.sendFunds(receiverWalletPubkey, payment);
         if (transaction == null)
             return null;
-        String previousHash = blockchain.get(blockchain.size() - 1).getHash();
-        Block block = new Block(previousHash);
-        boolean isBlockMade = block.addTransaction(transaction);
-        if (isBlockMade)
-            return block;
-        return null;
+        return transaction;
     }
 
     public static void printTransaction(ArrayList<Transaction> transactions) {
