@@ -9,10 +9,11 @@ import java.util.HashMap;
 public class Bank implements Runnable {
 
     private String user;
-    private String password;
+    public String password;
     private String name;
     private Wallet wallet;
     private String token;
+
     public static int status = 0; // 0 not filled, 1 bank take it
     public static ArrayList<Transaction> rawTransaction = new ArrayList<>();
     public static ArrayList<Transaction> secondRawTransaction = new ArrayList<>();
@@ -40,12 +41,6 @@ public class Bank implements Runnable {
         this.token = engine.p1.getResults(query).split(",")[0];
     }
 
-
-    public Wallet getWallet() {
-        return wallet;
-    }
-
-
     public void saveDB() {
         String save = "insert into bank values ('" + user + "','" + password + "','" + name + "','" + token + "','" + wallet.getId() + "');";
         engine.p1.getTable(save);
@@ -72,7 +67,7 @@ public class Bank implements Runnable {
 
                 Block block = new Block(null);
                 float firstValue = NoobChain.mainManager.getMiningReward();
-                Transaction firstTransaction = NoobChain.makeTransaction(firstValue, wallet.publicKey, NoobChain.mainManager.getWallet());
+                Transaction firstTransaction = NoobChain.makeTransaction(firstValue, wallet.getPublicKey(), NoobChain.mainManager.getWallet());
 
                 if (!block.addTransaction(firstTransaction)) {
                     System.out.println("ّFirst Transaciton Failed!");
@@ -108,10 +103,15 @@ public class Bank implements Runnable {
                 }
 
 
+
             }
             if (status == 2)
                 break;
         }
+    }
+
+    public Wallet getWallet() {
+        return wallet;
     }
 
     public String getUser() {
@@ -121,6 +121,4 @@ public class Bank implements Runnable {
     public float getBalance() {
         return wallet.getBalance();
     }
-
-
 }

@@ -10,13 +10,13 @@ public class GsonReader {
 
     public static Block readJson(String filename) {
         try {
+            String path = "D:\\Data and network security\\project\\blockchain-project\\source\\" + filename;
             Gson gson = new Gson();
 
-            BufferedReader br = new BufferedReader(new FileReader(filename));
+            BufferedReader br = new BufferedReader(new FileReader(path));
 
             BlockSample block = gson.fromJson(br, BlockSample.class);
             return convertSampleToRealClass(block);
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -58,7 +58,7 @@ public class GsonReader {
                     }
                 }
                 transaction.outputs = newTransactionOutput;
-                transaction.sign = transactionSample.signature.getBytes();
+                transaction.signature = transactionSample.signature.getBytes();
                 transaction.transactionId = transactionSample.id;
                 newTransaction.add(transaction);
             }

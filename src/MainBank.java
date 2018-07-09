@@ -9,13 +9,14 @@ public class MainBank {
     private String user;
     private String password;
     private ArrayList<String> tokens;
+    private Wallet wallet;
 
     private int difficulty;
     private int numberOfBlock;
     private float transactionFee;
     private float miningReward;
     private float maxLoan;
-    private Wallet wallet;
+
 
     public MainBank(String user, String password) throws PSQLException {
         this.user = user;
@@ -54,14 +55,12 @@ public class MainBank {
         engine.p1.getTable(save);
     }
 
-
     public void NumberOfBlock(int numberOfBlock) {
         this.numberOfBlock = numberOfBlock;
         String mainManager = "UPDATE mainManager SET numberofblock = " + numberOfBlock + "  where username = '" + this.user + "'";
         engine.p1.getResults(mainManager);
         System.out.println("Number of Transaction In Block: " + numberOfBlock);
     }
-
 
     public void TransactionFee(float transactionFee) {
         this.transactionFee = transactionFee;
@@ -148,7 +147,6 @@ public class MainBank {
     public Wallet getWallet() {
         return wallet;
     }
-
 
     public float getBalance() {
         return wallet.getBalance();

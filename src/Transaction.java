@@ -9,9 +9,10 @@ public class Transaction {
 	public PublicKey sender; //Senders address/public key.
 	public PublicKey reciepient; //Recipients address/public key.
 	public float value; //Contains the amount we wish to send to the recipient.
-	public byte[] sign; //This is to prevent anybody else from spending funds in our wallet.
-	private long timeStamp;
+    public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
+    private long timeStamp;
 	private float cost;
+
 	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
 	public ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 	
@@ -23,9 +24,9 @@ public class Transaction {
 		this.reciepient = to;
 		this.value = value;
 		this.inputs = inputs;
-		this.timeStamp = new Date().getTime();
-		this.cost = NoobChain.mainManager.getTransactionFee();
-	}
+        this.timeStamp = new Date().getTime();
+        this.cost = NoobChain.mainManager.getTransactionFee();
+    }
 	
 	public boolean processTransaction() {
 
@@ -33,7 +34,7 @@ public class Transaction {
 			System.out.println("#Transaction Signature failed to verify");
 			return false;
 		}
-				
+
 		//Gathers transaction inputs (Making sure they are unspent):
 		for(TransactionInput i : inputs) {
 			i.UTXO = NoobChain.UTXOs.get(i.transactionOutputId);
@@ -45,13 +46,13 @@ public class Transaction {
 			System.out.println("Please enter the amount greater than " + NoobChain.minimumTransaction);
 			return false;
 		}
-		
+
 		//Generate transaction outputs:
 		float leftOver = getInputsValue() - value - cost;//TODO is this correct? subtracting fee!
 		transactionId = calulateHash();
 		outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
-		outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender		
-				
+        outputs.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over 'change' back to sender
+
 		//Add outputs to Unspent list
 		for(TransactionOutput o : outputs) {
 			NoobChain.UTXOs.put(o.id , o);
@@ -59,11 +60,11 @@ public class Transaction {
 
 		//Remove transaction inputs from utxo lists as spent:
 		for(TransactionInput i : inputs) {
-			if (i.UTXO == null) continue; //if Transaction can't be found skip it
-			NoobChain.UTXOs.remove(i.UTXO.id);
+            if (i.UTXO == null) continue; //if Transaction can't be found skip it
+            NoobChain.UTXOs.remove(i.UTXO.id);
 		}
-		
-		return true;
+
+        return true;
 	}
 	
 	public float getInputsValue() {
@@ -77,13 +78,13 @@ public class Transaction {
 	
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-		sign = StringUtil.applyECDSASig(privateKey, data);
-	}
+        signature = StringUtil.applyECDSASig(privateKey, data);
+    }
 	
 	public boolean verifySignature() {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-		return StringUtil.verifyECDSASig(sender, data, sign);
-	}
+        return StringUtil.verifyECDSASig(sender, data, signature);
+    }
 	
 	public float getOutputsValue() {
 		float total = 0;
@@ -102,12 +103,11 @@ public class Transaction {
 				);
 	}
 
-	public String toString() {
-		return "Sender Public Key: " + sender + "\n"
-				+ "Receiver Public Key: " + reciepient + "\n"
-				+ "Value: " + value + "\n"
-				+ "Time: " + timeStamp + "\n"
-				+ "Cost: " + cost + "\n";
-	}
-
+    public String toString() {
+        return "Sender Public Key: " + sender + "\n"
+                + "Receiver Public Key: " + reciepient + "\n"
+                + "Value: " + value + "\n"
+                + "Time: " + timeStamp + "\n"
+                + "Cost: " + cost + "\n";
+    }
 }

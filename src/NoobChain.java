@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import static java.lang.System.in;
 import static java.lang.System.out;
 
 
@@ -29,16 +28,19 @@ public class NoobChain {
     public static Bank onlineBank;
     public static Customer onlineCustomer;
 
-    public static int type = 0;
+    public static int type = -1;
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, PSQLException {
+    public static void main(String[] args) throws IOException, PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
 
-        out.println("Welcome to blockchain");
-        out.println("Please enter your command");
+        System.out.println("Welcome to blockchain");
+        System.out.println("Please enter your command");
 
-        Scanner scanner = new Scanner(in);
+        Scanner scanner = new Scanner(System.in);
         String input;
+
         fillBank();
+        fillCustomer();
+
         while (true) {
             input = scanner.nextLine();
 
@@ -55,6 +57,7 @@ public class NoobChain {
                     }
                 }
             }
+
             if (type == 1) {
 
                 if (input.contains("Number of Transaction In Block")) {
@@ -82,11 +85,11 @@ public class NoobChain {
                     mainManager.MaxLoan(Float.parseFloat(strings[2]));
                 }
             }
-            else if (input.contains("Get")) {
+
+            if (input.contains("Get") && !input.equals("Get Balance")) {
                 String[] strings = input.split(" ");
                 GsonReader.readJson(strings[1]);
             }
-
 
             else if (input.equals("Show PubK PriK")) {
                 int walletID = 0;
@@ -102,6 +105,7 @@ public class NoobChain {
                 System.out.println("public key: " + engine.getWalletPubK(walletID));
                 System.out.println("Private key: " + engine.getWalletPrvK(walletID));
             }
+
             else if (input.contains("Create Bank")) {
                 String[] strings = input.split(" ");
                 if (mainManager.getTokens().contains(strings[5])) {
@@ -140,7 +144,7 @@ public class NoobChain {
                             onlineBank = banks.get(i);
                             break;
                         }
-                }
+                    }
                     Thread bankThread = new Thread(onlineBank);
                     bankThread.start();
                     System.out.println("login successful as bank manager");
@@ -160,7 +164,6 @@ public class NoobChain {
 
             }
 
-
             else if (input.equals("Get Balance")) {
                 if (type == 3) {
                     out.println(onlineCustomer.getBalance());
@@ -175,30 +178,36 @@ public class NoobChain {
                     System.out.println("Permission Deny");
                 }
             }
-            else if (input.contains("Transfer")) {
+            else if (input.contains("Transfer") && !input.contains("Send Transfer")) {
                 if (type == 3) {
                     String[] strings = input.split(" ");
                     float payment = Float.parseFloat(strings[1]);
                     int receiverWalletID = Integer.parseInt(strings[3]);
-                    PublicKey recevierpk = getWalletPubKey(receiverWalletID);
+                    PublicKey recevierpk = StringUtil.convertStringToPUK(engine.getWalletPubK(receiverWalletID));
                     Transaction transaction = makeTransaction(payment, recevierpk, onlineCustomer.getWallet());
                     if (transaction != null)
                         Bank.rawTransaction.add(transaction);
+
+                }
+                else {
+                    System.out.println("Permission Deny");
                 }
             }
+
             else if (input.contains("Send Transfer")) {
                 String[] strings = input.split(" ");
                 float payment = Float.parseFloat(strings[2]);
                 String senderPUK = strings[3];
                 String senderPRK = strings[4];
                 String receiverPUK = strings[6];
-                Wallet senderWallet = getWallet(senderPUK);
-                Wallet receiverWallet = getWallet(receiverPUK);
-                Transaction transaction = makeTransaction(payment, receiverWallet.publicKey, senderWallet);
+                Wallet senderWallet = engine.getWallet(senderPUK);
+                Wallet receiverWallet = engine.getWallet(receiverPUK);
+                Transaction transaction = makeTransaction(payment, receiverWallet.getPublicKey(), senderWallet);
                 if (transaction != null)
                     Bank.rawTransaction.add(transaction);
 
             }
+
             else if (input.contains("Request Loan")) {
                 if (type == 3) {
                     String[] strings = input.split(" ");
@@ -209,16 +218,17 @@ public class NoobChain {
                     }
                     String bankName = strings[4];
                     Bank bank = getBank(bankName);
-                    Transaction transaction = makeTransaction(loan, onlineCustomer.getWallet().publicKey, bank.getWallet());
+                    Transaction transaction = makeTransaction(loan, onlineCustomer.getWallet().getPublicKey(), bank.getWallet());
                     ArrayList<Transaction> trs = new ArrayList<>();
                     trs.add(transaction);
                     Bank.bankLoan.put(bankName, trs);
 
                 }
                 else {
-                    out.println("Wrong Command");
+                    out.println("Permission Deny");
                 }
             }
+
             else if (input.equals("Show Transaction")) {
                 ArrayList<ArrayList<Transaction>> result = null;
                 if (type == 3) {
@@ -237,22 +247,19 @@ public class NoobChain {
                 printTransaction(result.get(1));
 
             }
+
             else if (input.equals("Show BlockChain")) {
                 String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
-                out.println("\nThe block chain: ");
-                out.println(blockchainJson);
+                System.out.println("The block chain: ");
+                System.out.println(blockchainJson);
             }
+
             else if (input.equals("Show Invalid Transaction")) {
-                ArrayList<Transaction> invalidTransaction;
-                if (type == 3)
-                    invalidTransaction = getInvalidTransactionCustomer(onlineCustomer);
-                else if (type == 2)
-                    invalidTransaction = getInvalidTransactionBank(onlineBank);
-                else
-                    invalidTransaction = getAllInvalidTransaction();
+                ArrayList<Transaction> invalidTransaction = getInvalidTrasaction();
                 out.println("Invalid Transaction: ");
                 out.println(invalidTransaction);
             }
+
             else if (input.contains("Show Customers")) {
                 if (type == 3) {
                     System.out.println("Table of Customer bank: " + onlineBank.getName());
@@ -266,27 +273,12 @@ public class NoobChain {
             else if (input.equals("Logout")) {
                 type = 0;
             }
+
             else if (input == null) {
                 break;
             }
         }
 
-    }
-
-    private static ArrayList<Transaction> getInvalidTransactionBank(Bank bank) {
-        ArrayList<Transaction> invalidTransaction = new ArrayList<>();
-        for (Customer customer : customers)
-            if (customer.getBank().getUser().equals(bank.getUser()))
-                invalidTransaction.addAll(getInvalidTransactionCustomer(customer));
-        return invalidTransaction;
-    }
-
-    private static ArrayList<Transaction> getAllInvalidTransaction() {
-        ArrayList<Transaction> transactions = new ArrayList<>();
-        for (HashMap.Entry<PublicKey, ArrayList<Transaction>> entry : Bank.invaledTransaction.entrySet()) {
-            transactions.addAll(entry.getValue());
-        }
-        return transactions;
     }
 
     public static void fillBank() throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
@@ -322,12 +314,6 @@ public class NoobChain {
         return null;
     }
 
-    public static Bank getCustomerBank(String userName) {
-        String name = engine.getCustomerBank(userName);
-        return getBank(name);
-    }
-
-
     public static Boolean isChainValid() {
         Block block;
         Block previousBlock;
@@ -342,17 +328,17 @@ public class NoobChain {
             previousBlock = blockchain.get(i - 1);
             //compare registered hash and calculated hash:
             if (!block.getHash().equals(block.calculateHash())) {
-                out.println("#Current Hashes not equal");
+                out.println("Current Hashes not equal");
                 return false;
             }
             //compare previous hash and registered previous hash
             if (!previousBlock.getHash().equals(block.getPreviousHash())) {
-                out.println("#Previous Hashes not equal");
+                out.println("Previous Hashes not equal");
                 return false;
             }
             //check if hash is solved
             if (!block.getHash().substring(0, mainManager.getDifficulty()).equals(hashTarget)) {
-                out.println("#This block hasn't been mined");
+                out.println("This block hasn't been mined");
                 return false;
             }
 
@@ -362,11 +348,11 @@ public class NoobChain {
                 Transaction transaction = block.getTransactions().get(t);
 
                 if (!transaction.verifySignature()) {
-                    out.println("#Signature on Transaction(" + t + ") is Invalid");
+                    out.println("Signature on Transaction(" + t + ") is Invalid");
                     return false;
                 }
                 if (transaction.getInputsValue() != transaction.getOutputsValue()) {
-                    out.println("#Inputs are note equal to outputs on Transaction(" + t + ")");
+                    out.println("Inputs are note equal to outputs on Transaction(" + t + ")");
                     return false;
                 }
 
@@ -374,12 +360,12 @@ public class NoobChain {
                     tempOutput = tempUTXOs.get(input.transactionOutputId);
 
                     if (tempOutput == null) {
-                        out.println("#Referenced input on Transaction(" + t + ") is Missing");
+                        out.println("Referenced input on Transaction(" + t + ") is Missing");
                         return false;
                     }
 
                     if (input.UTXO.value != tempOutput.value) {
-                        out.println("#Referenced input Transaction(" + t + ") value is Invalid");
+                        out.println("Referenced input Transaction(" + t + ") value is Invalid");
                         return false;
                     }
 
@@ -391,11 +377,11 @@ public class NoobChain {
                 }
 
                 if (transaction.outputs.get(0).reciepient != transaction.reciepient) {
-                    out.println("#Transaction(" + t + ") output reciepient is not who it should be");
+                    out.println("Transaction(" + t + ") output reciepient is not who it should be");
                     return false;
                 }
                 if (transaction.outputs.get(1).reciepient != transaction.sender) {
-                    out.println("#Transaction(" + t + ") output 'change' is not sender.");
+                    out.println("Transaction(" + t + ") output 'change' is not sender.");
                     return false;
                 }
 
@@ -411,16 +397,6 @@ public class NoobChain {
         blockchain.add(newBlock);
     }
 
-    public static PublicKey getWalletPubKey(int walletID) {
-        //TODO DB
-        return null;
-    }
-
-    public static Wallet getWallet(String puk) {
-        //TODO DB
-        return null;
-    }
-
     public static Transaction makeTransaction(float payment, PublicKey receiverWalletPubkey, Wallet senderWallet) {
         Transaction transaction = senderWallet.sendFunds(receiverWalletPubkey, payment);
         if (transaction == null)
@@ -434,7 +410,6 @@ public class NoobChain {
             out.println("####   ####    ####    ####    ####");
         }
     }
-
 
     public static ArrayList<ArrayList<Transaction>> getValidTransaction(Wallet wallet) {
         ArrayList<Transaction> inputTransaction = new ArrayList<>();
@@ -468,31 +443,47 @@ public class NoobChain {
         return result;
     }
 
-    public static ArrayList<Transaction> getInvalidTransactionCustomer(Customer customer) {
+    public static ArrayList<Transaction> getInvalidTrasaction() {
         ArrayList<Transaction> invalidTransaction = new ArrayList<>();
 
-        if (Bank.invaledTransaction.get(customer.getWallet().publicKey) != null) {
-            return Bank.invaledTransaction.get(customer.getWallet().publicKey);
+        Block block;
+        Block previousBlock;
+
+        String hashTarget = new String(new char[NoobChain.mainManager.getDifficulty()]).replace('\0', '0');
+
+        for (int i = 1; i < blockchain.size(); i++) {
+
+            block = blockchain.get(i);
+            previousBlock = blockchain.get(i - 1);
+
+            if (!block.getHash().equals(block.calculateHash()) || !previousBlock.getHash().equals(block.getPreviousHash()) || !block.getHash().substring(0, NoobChain.mainManager.getDifficulty()).equals(hashTarget))
+                for (Transaction transaction : block.getTransactions()) {
+                    if (!transaction.verifySignature() || transaction.getInputsValue() != transaction.getOutputsValue() || transaction.outputs.get(0).reciepient != transaction.reciepient || transaction.outputs.get(1).reciepient != transaction.sender) {
+                        invalidTransaction.add(transaction);
+                    }
+                }
         }
         return invalidTransaction;
     }
 
-    public static ArrayList<ArrayList<Transaction>> getValidTransactionBanksCustomer(Bank bank) {
-        ArrayList<ArrayList<Transaction>> validTransaction = new ArrayList<>();
-        ArrayList<Transaction> input = new ArrayList<>();
-        ArrayList<Transaction> output = new ArrayList<>();
-        for (Customer customer : customers) {
-            if (customer.getBank().getUser().equals(bank.getUser())) {
-                ArrayList<ArrayList<Transaction>> customerTransaction = getValidTransaction(customer.getWallet());
-                input.addAll(customerTransaction.get(0));
-                output.addAll(customerTransaction.get(1));
+    public static ArrayList<Transaction> getInvalidTransactionCustomer(Customer customer) {
+        ArrayList<Transaction> invalidTransaction = new ArrayList<>();
 
-            }
-
+        if (Bank.invaledTransaction.get(customer.getWallet().getPublicKey()) != null) {
+            return Bank.invaledTransaction.get(customer.getWallet().getPublicKey());
         }
-        validTransaction.add(input);
-        validTransaction.add(output);
-        return validTransaction;
+        else {
+            System.out.println("Doesnot have invalid transaction!");
+        }
+        return invalidTransaction;
     }
-}
 
+    private static ArrayList<Transaction> getInvalidTransactionBank(Bank bank) {
+        ArrayList<Transaction> invalidTransaction = new ArrayList<>();
+        for (Customer customer : customers)
+            if (customer.getBank().getUser().equals(bank.getUser()))
+                invalidTransaction.addAll(getInvalidTransactionCustomer(customer));
+        return invalidTransaction;
+    }
+
+}

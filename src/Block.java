@@ -1,17 +1,14 @@
 import java.util.ArrayList;
 import java.util.Date;
 
-import static java.lang.System.out;
-
 public class Block {
 
 	private String hash;
 	private String previousHash;
 	private String merkleRoot;
-	private ArrayList<Transaction> transactions = new ArrayList<>(); //our data will be a simple message.
+	private ArrayList<Transaction> transactions = new ArrayList<Transaction>(); //our data will be a simple message.
 	private long timeStamp; //as number of milliseconds since 1/1/1970.
 	private int nonce;
-
 
 	//Block Constructor.  
 	public Block(String previousHash ) {
@@ -24,10 +21,10 @@ public class Block {
 	public String calculateHash() {
 		return StringUtil.applySha256(
 				previousHash +
-				Long.toString(timeStamp) +
-				Integer.toString(nonce) + 
-				merkleRoot
-				);
+						Long.toString(timeStamp) +
+						Integer.toString(nonce) +
+						merkleRoot
+		);
 	}
 	
 	//Increases nonce value until hash target is reached.
@@ -38,7 +35,7 @@ public class Block {
 			nonce ++;
 			hash = calculateHash();
 		}
-		out.println("Block Mined!!! : " + hash);
+		System.out.println("Block Mined!!! : " + hash);
 	}
 	
 	//Add transactions to this block
@@ -46,14 +43,14 @@ public class Block {
 		//process transaction and check if valid, unless block is genesis block then ignore.
 		if(transaction == null) return false;		
 		if((!"0".equals(previousHash))) {
-			if ((!transaction.processTransaction())) {
-				out.println("Transaction failed to process. Discarded.");
+			if (!transaction.processTransaction()) {
+				System.out.println("Transaction failed to process. Discarded.");
 				return false;
 			}
 		}
 
 		transactions.add(transaction);
-		out.println("Transaction Successfully added to Block");
+		System.out.println("Transaction Successfully added to Block");
 		return true;
 	}
 
@@ -86,12 +83,10 @@ public class Block {
 	}
 
 	public ArrayList<Transaction> getTransactions() {
-
 		return transactions;
 	}
 
 	public String getHash() {
-
 		return hash;
 	}
 }

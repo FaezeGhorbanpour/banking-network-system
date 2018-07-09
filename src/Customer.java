@@ -18,7 +18,7 @@ public class Customer {
         saveDB();
     }
 
-    public Customer(String id, String password, Bank bank, int walletID) throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public Customer(String id, String password, Bank bank, int walletID) throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.id = id;
         this.password = password;
         this.bank = bank;
@@ -42,7 +42,6 @@ public class Customer {
     public String getId() {
         return id;
     }
-
 
     public Bank getBank() {
         return bank;
