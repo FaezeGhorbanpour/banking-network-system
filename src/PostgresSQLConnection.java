@@ -38,6 +38,7 @@ class PostgreSQLConnection {
         }
     }
 
+    // ,,,,
     public String getResults(String sqlQuery) {
         try {
             String result = "";
@@ -51,16 +52,15 @@ class PostgreSQLConnection {
             while (rs.next()) {
                 i = 1;
                 while (i <= count) {
-                    String format = "%1$-" + rsMeta.getColumnDisplaySize(i) + "s";
-                    String formatedValue = String.format(format, new String(rs.getBytes(i), StandardCharsets.UTF_8));
-                    result += formatedValue;
+                    String formatedValue = new String(rs.getBytes(i), StandardCharsets.UTF_8);
+                    result += formatedValue + ",";
                     i++;
                 }
             }
             this.disconnect();
             return result;
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+//            e.printStackTrace(System.out);
             return "";
         }
     }
@@ -96,7 +96,7 @@ class PostgreSQLConnection {
             this.disconnect();
             return result;
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+//            e.printStackTrace(System.out);
             return "";
         }
     }

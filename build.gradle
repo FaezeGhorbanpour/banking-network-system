@@ -9,5 +9,5 @@ dependencies {
     //testCompile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
-
+    compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
 }

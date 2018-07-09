@@ -1,6 +1,8 @@
-import java.nio.charset.Charset;
+import org.postgresql.util.PSQLException;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class MainBank {
 
@@ -9,62 +11,100 @@ public class MainBank {
     private ArrayList<String> tokens;
 
     private int difficulty;
-    private int numberOfTransaction;
+    private int numberOfBlock;
     private float transactionFee;
     private float miningReward;
     private float maxLoan;
     private Wallet wallet;
 
-
-    public MainBank(String user, String password) {
+    public MainBank(String user, String password) throws PSQLException {
         this.user = user;
         this.password = password;
-        tokens = new ArrayList<>();
         wallet = new Wallet();
+        tokens = new ArrayList<>();
+        this.difficulty = 0;
+        this.numberOfBlock = 0;
+        this.transactionFee = 0;
+        this.miningReward = 0;
+        this.maxLoan = 0;
         saveDB();
     }
 
+    public MainBank(String user, String password, int WalletID) throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
+        this.user = user;
+        this.password = password;
+        wallet = engine.getWallet(WalletID);
+        tokens = new ArrayList<>();
+        String query = "select difficulty from mainManager where userName = '" + user + "' and password = '" + password + "';";
+        this.difficulty = Integer.parseInt(engine.p1.getResults(query).split(",")[0]);
+        query = "select numberOfBlock from mainManager where userName = '" + user + "' and password = '" + password + "';";
+        this.numberOfBlock = Integer.parseInt(engine.p1.getResults(query).split(",")[0]);
+        query = "select transactionFee from mainManager where userName = '" + user + "' and password = '" + password + "';";
+        this.transactionFee = Float.parseFloat(engine.p1.getResults(query).split(",")[0]);
+        query = "select miningReward from mainManager where userName = '" + user + "' and password = '" + password + "';";
+        this.miningReward = Float.parseFloat(engine.p1.getResults(query).split(",")[0]);
+        query = "select maxLoan from mainManager where userName = '" + user + "' and password = '" + password + "';";
+        this.maxLoan = Float.parseFloat(engine.p1.getResults(query).split(",")[0]);
+    }
+
     public void saveDB() {
-        String save = "insert into mainManage values ('" + user + "','" + password + "');";
+        String save = "insert into mainManager values ('" + user + "','" + password + "','" + wallet.getId() +
+                "','" + difficulty + "','" + numberOfBlock + "','" + transactionFee + "','" + miningReward +
+                "','" + maxLoan + "');";
         engine.p1.getTable(save);
     }
 
-    public void NumberOfTransaction(int numberOfBlock) {
-        this.numberOfTransaction = numberOfBlock;
+
+    public void NumberOfBlock(int numberOfBlock) {
+        this.numberOfBlock = numberOfBlock;
+        String mainManager = "UPDATE mainManager SET numberofblock = " + numberOfBlock + "  where username = '" + this.user + "'";
+        engine.p1.getResults(mainManager);
         System.out.println("Number of Transaction In Block: " + numberOfBlock);
     }
 
+
     public void TransactionFee(float transactionFee) {
         this.transactionFee = transactionFee;
-        System.out.println("Transaction Fee" + transactionFee);
+        String mainManager = "UPDATE mainManager SET transactionFee = " + transactionFee + "  where username = '" + this.user + "'";
+        engine.p1.getResults(mainManager);
+        System.out.println("Transaction Fee " + transactionFee + "$");
     }
 
     public void BlockMiningReward(float miningReward) {
         this.miningReward = miningReward;
-        System.out.println("Mining Reward" + miningReward);
+        String mainManager = "UPDATE mainManager SET miningReward = " + miningReward + "  where username = '" + this.user + "'";
+        engine.p1.getResults(mainManager);
+        System.out.println("Mining Reward " + miningReward + "$");
     }
 
     public void Difficulty(int difficulty) {
         this.difficulty = difficulty;
-        System.out.println("Difficulty" + difficulty);
+        String mainManager = "UPDATE mainManager SET difficulty = " + difficulty + "  where username = '" + this.user + "'";
+        engine.p1.getResults(mainManager);
+        System.out.println("Difficulty: " + difficulty);
     }
 
     public String addToken() {
         String token = "";
-        boolean notAdded = false;
-        while (!notAdded)
+        while (true) {
             token = generateToken();
-        if (!tokens.contains(token)) {
-            tokens.add(token);
-            notAdded = true;
+            if (!tokens.contains(token)) {
+                tokens.add(token);
+                break;
+            }
         }
         return token;
     }
 
     public String generateToken() {
-        byte[] array = new byte[7]; // length is bounded by 7
-        new Random().nextBytes(array);
-        return new String(array, Charset.forName("UTF-8"));
+        String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        int count = 7;
+        StringBuilder builder = new StringBuilder();
+        while (count-- != 0) {
+            int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
+            builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+        }
+        return builder.toString();
     }
 
     public void MaxLoan(float maxLoan) {
@@ -89,8 +129,8 @@ public class MainBank {
         return difficulty;
     }
 
-    public int getNumberOfTransaction() {
-        return numberOfTransaction;
+    public int getNumberOfBlock() {
+        return numberOfBlock;
     }
 
     public float getTransactionFee() {
@@ -108,4 +148,10 @@ public class MainBank {
     public Wallet getWallet() {
         return wallet;
     }
+
+
+    public float getBalance() {
+        return wallet.getBalance();
+    }
+
 }

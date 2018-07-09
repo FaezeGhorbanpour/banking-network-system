@@ -16,6 +16,7 @@ public class GsonReader {
 
             BlockSample block = gson.fromJson(br, BlockSample.class);
             return convertSampleToRealClass(block);
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -31,34 +32,40 @@ public class GsonReader {
 
         ArrayList<Transaction> newTransaction = new ArrayList<>();
         for (TransactionSample transactionSample : blockSample.transactions) {
-            PublicKey senderPUK = StringUtil.convertStringToPUK(transactionSample.sender_public_key);
-            PublicKey receiverPUK = StringUtil.convertStringToPUK(transactionSample.receiver_public_key);
-            ArrayList<TransactionInput> newTransactionInput = new ArrayList<>();
-            for (TransactionInputSample transactionInputSample : transactionSample.input) {
-                TransactionInput newInput = new TransactionInput(transactionInputSample.transactionOutputId);
-                TransactionOutputSample transOutputSample = transactionInputSample.utxo;
-                TransactionOutput newtransOutput = new TransactionOutput(StringUtil.convertStringToPUK(transOutputSample.recipient),
-                        transOutputSample.value, transOutputSample.parentTransactionId);
-                newtransOutput.id = transOutputSample.id;
-                newInput.UTXO = newtransOutput;
-                newTransactionInput.add(newInput);
-            }
+            if (transactionSample != null && transactionSample.id != null) {
+                PublicKey senderPUK = StringUtil.convertStringToPUK(transactionSample.sender_public_key);
+                PublicKey receiverPUK = StringUtil.convertStringToPUK(transactionSample.receiver_public_key);
+                ArrayList<TransactionInput> newTransactionInput = new ArrayList<>();
+                for (TransactionInputSample transactionInputSample : transactionSample.input) {
+                    if (transactionInputSample != null && transactionInputSample.transactionOutputId != null && transactionInputSample.utxo != null) {
+                        TransactionInput newInput = new TransactionInput(transactionInputSample.transactionOutputId);
+                        TransactionOutputSample transOutputSample = transactionInputSample.utxo;
+                        TransactionOutput newtransOutput = new TransactionOutput(StringUtil.convertStringToPUK(transOutputSample.recipient), transOutputSample.value, transOutputSample.parentTransactionId);
+                        newtransOutput.id = transOutputSample.id;
+                        newInput.UTXO = newtransOutput;
+                        newTransactionInput.add(newInput);
+                    }
+                }
 
-            Transaction transaction = new Transaction(senderPUK, receiverPUK, transactionSample.value, newTransactionInput);
-            ArrayList<TransactionOutput> newTransactionOutput = new ArrayList<>();
-            for (TransactionOutputSample transactionOutputSample : transactionSample.output) {
-                TransactionOutput transactionOutput = new TransactionOutput(StringUtil.convertStringToPUK(transactionOutputSample.recipient)
-                        , transactionOutputSample.value, transactionOutputSample.parentTransactionId);
-                transactionOutput.id = transactionOutputSample.id;
-                newTransactionOutput.add(transactionOutput);
+                Transaction transaction = new Transaction(senderPUK, receiverPUK, transactionSample.value, newTransactionInput);
+                ArrayList<TransactionOutput> newTransactionOutput = new ArrayList<>();
+                for (TransactionOutputSample transactionOutputSample : transactionSample.output) {
+                    if (transactionOutputSample != null && transactionOutputSample.id != null) {
+                        TransactionOutput transactionOutput = new TransactionOutput(StringUtil.convertStringToPUK(transactionOutputSample.recipient)
+                                , transactionOutputSample.value, transactionOutputSample.parentTransactionId);
+                        transactionOutput.id = transactionOutputSample.id;
+                        newTransactionOutput.add(transactionOutput);
+                    }
+                }
+                transaction.outputs = newTransactionOutput;
+                transaction.sign = transactionSample.signature.getBytes();
+                transaction.transactionId = transactionSample.id;
+                newTransaction.add(transaction);
             }
-            transaction.outputs = newTransactionOutput;
-            transaction.sign = transactionSample.signature.getBytes();
-            transaction.transactionId = transactionSample.id;
-            newTransaction.add(transaction);
         }
         newBlock.setTransactions(newTransaction);
         return newBlock;
+
     }
 }
 

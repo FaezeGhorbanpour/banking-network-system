@@ -13,20 +13,6 @@ public class Block {
 	private int nonce;
 
 
-	public String getPreviousHash() {
-		return previousHash;
-	}
-
-	public ArrayList<Transaction> getTransactions() {
-
-		return transactions;
-	}
-
-	public String getHash() {
-
-		return hash;
-	}
-
 	//Block Constructor.  
 	public Block(String previousHash ) {
 		this.previousHash = previousHash;
@@ -93,5 +79,19 @@ public class Block {
 
 	public void setNonce(int nonce) {
 		this.nonce = nonce;
+	}
+
+	public String getPreviousHash() {
+		return previousHash;
+	}
+
+	public ArrayList<Transaction> getTransactions() {
+
+		return transactions;
+	}
+
+	public String getHash() {
+
+		return hash;
 	}
 }
