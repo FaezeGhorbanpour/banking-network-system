@@ -15,6 +15,11 @@ public class Wallet {
 
     public HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
+    public Wallet(int id) {
+        this.id = id;
+        generateKeyPair();
+    }
+
     public Wallet() throws PSQLException {
         id = ++mainId;
         generateKeyPair();

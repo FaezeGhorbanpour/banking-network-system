@@ -9,3 +9,6 @@ check (value notnull );
 
 create domain Dtoken as varchar(7) 
 check (value notnull );
+
+CREATE DOMAIN token AS VARCHAR(7)
+  CHECK (value NOTNULL );

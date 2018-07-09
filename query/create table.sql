@@ -4,11 +4,11 @@ password varchar(20)
 );
 
 create table bank(
-userName Dusername primary key,
-password varchar(20),
-name Dname UNIQUE,
-token token,
-id int,
+  userName Dusername primary key,
+  password varchar(20),
+  name     Dname UNIQUE,
+  token    DTOKEN,
+  id       int,
 foreign key(id) references wallet(id)
 );
 

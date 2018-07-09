@@ -10,7 +10,7 @@ public class GsonReader {
 
     public static Block readJson(String filename) {
         try {
-            String path = "D:\\Data and network security\\project\\blockchain-project\\source\\" + filename;
+            String path = filename;
             Gson gson = new Gson();
 
             BufferedReader br = new BufferedReader(new FileReader(path));

@@ -21,7 +21,7 @@ public class MainBank {
     public MainBank(String user, String password) throws PSQLException {
         this.user = user;
         this.password = password;
-        wallet = new Wallet();
+        wallet = new Wallet(10);
         tokens = new ArrayList<>();
         this.difficulty = 0;
         this.numberOfBlock = 0;

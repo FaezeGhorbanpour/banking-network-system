@@ -14,7 +14,7 @@ public class Customer {
         this.id = id;
         this.password = password;
         this.bank = bank;
-        this.wallet = new Wallet();
+        this.wallet = new Wallet(10);
         saveDB();
     }
 

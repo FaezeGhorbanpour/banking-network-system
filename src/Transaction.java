@@ -40,6 +40,10 @@ public class Transaction {
 			i.UTXO = NoobChain.UTXOs.get(i.transactionOutputId);
 		}
 
+		if (value < 0) {
+			System.out.println("Wanted Amount is Negative ! ");
+			return false;
+		}
 		//Checks if transaction is valid:
 		if(getInputsValue() < NoobChain.minimumTransaction) {
 			System.out.println("Transaction Inputs too small: " + getInputsValue());
@@ -48,7 +52,7 @@ public class Transaction {
 		}
 
 		//Generate transaction outputs:
-		float leftOver = getInputsValue() - value - cost;//TODO is this correct? subtracting fee!
+		float leftOver = getInputsValue() - value - cost;
 		transactionId = calulateHash();
 		outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
         outputs.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over 'change' back to sender

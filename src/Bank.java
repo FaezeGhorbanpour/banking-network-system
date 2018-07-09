@@ -19,6 +19,7 @@ public class Bank implements Runnable {
     public static ArrayList<Transaction> secondRawTransaction = new ArrayList<>();
     public static HashMap<String, ArrayList<Transaction>> bankLoan = new HashMap<>();
     public static HashMap<PublicKey, ArrayList<Transaction>> invaledTransaction = new HashMap<>();
+    public static Wallet nullWallet = new Wallet(-1);
 
 
     //Bank Constructor.
@@ -26,7 +27,7 @@ public class Bank implements Runnable {
         this.user = user;
         this.password = password;
         this.name = name;
-        this.wallet = new Wallet();
+        this.wallet = new Wallet(10);
         this.token = token;
         saveDB();
     }
@@ -56,18 +57,18 @@ public class Bank implements Runnable {
         int number = 0;
         System.out.println("Bank Thread !");
         while (true) {
-            if (status == 0 && (rawTransaction.size() == numberOfTransaction - number || (rawTransaction.size() + bankLoan.get(name).size() == numberOfTransaction - number))) {
+            if (status == 0 && (rawTransaction.size() == numberOfTransaction - number || (bankLoan.get(name) != null && rawTransaction.size() + bankLoan.get(name).size() == numberOfTransaction - number))) {
                 status = 1;
                 ArrayList<Transaction> transactionCopy = rawTransaction;
                 rawTransaction = (ArrayList<Transaction>) secondRawTransaction.clone();
                 secondRawTransaction = new ArrayList<>();
                 status = 0;
-
-                transactionCopy.addAll(bankLoan.get(name));
+                if (bankLoan.get(name) != null)
+                    transactionCopy.addAll(bankLoan.get(name));
 
                 Block block = new Block(null);
                 float firstValue = NoobChain.mainManager.getMiningReward();
-                Transaction firstTransaction = NoobChain.makeTransaction(firstValue, wallet.getPublicKey(), NoobChain.mainManager.getWallet());
+                Transaction firstTransaction = NoobChain.makeTransaction(firstValue, wallet.getPublicKey(), nullWallet);
 
                 if (!block.addTransaction(firstTransaction)) {
                     System.out.println("ّFirst Transaciton Failed!");

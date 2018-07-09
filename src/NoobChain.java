@@ -88,7 +88,7 @@ public class NoobChain {
 
             if (input.contains("Get") && !input.equals("Get Balance")) {
                 String[] strings = input.split(" ");
-                GsonReader.readJson(strings[1]);
+                blockchain.add(GsonReader.readJson(strings[1]));
             }
 
             else if (input.equals("Show PubK PriK")) {
@@ -112,6 +112,7 @@ public class NoobChain {
                     onlineBank = new Bank(strings[2], strings[3], strings[4], strings[5]);
                     banks.add(onlineBank);
                     type = engine.signup(strings[2], strings[3], 2);
+
                     Thread bankThread = new Thread(onlineBank);
                     bankThread.start();
                     System.out.println("successful sign up");
@@ -126,6 +127,7 @@ public class NoobChain {
                 onlineCustomer = new Customer(strings[2], strings[3], customerBank);
                 customers.add(onlineCustomer);
                 type = engine.signup(strings[2], strings[3], 3);
+
                 System.out.println("successful sign up");
                 System.out.println("Wallet ID: " + onlineCustomer.getWallet().getId());
             }
@@ -259,9 +261,16 @@ public class NoobChain {
                 out.println("Invalid Transaction: ");
                 out.println(invalidTransaction);
             }
-
+            else if (input.equals("Show BlockChain Balance")) {
+                if (type == 1) {
+                    System.out.println("BlockChain Balance is :");
+                    System.out.println(showWholeBalance());
+                }
+                else
+                    out.println("Permission Deny");
+            }
             else if (input.contains("Show Customers")) {
-                if (type == 3) {
+                if (type == 1) {
                     System.out.println("Table of Customer bank: " + onlineBank.getName());
                     System.out.println(engine.getBankcustomer(onlineBank.getName()));
                 }
@@ -279,6 +288,18 @@ public class NoobChain {
             }
         }
 
+    }
+
+    private static float showWholeBalance() {
+        float wholeBalance = 0;
+        for (Bank bank : banks) {
+            wholeBalance += bank.getBalance();
+        }
+        for (Customer customer : customers) {
+            wholeBalance += customer.getBalance();
+        }
+        wholeBalance += mainManager.getBalance();
+        return wholeBalance;
     }
 
     public static void fillBank() throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {

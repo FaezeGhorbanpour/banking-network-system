@@ -6,9 +6,9 @@ import java.security.spec.InvalidKeySpecException;
 public class engine {
 
     private static String host = "127.0.0.1";
-    private static String port = "5432";
+    private static String port = "5434";
     private static String username = "postgres";
-    private static String password = "1234";
+    private static String password = "FG1234fg";
     private static String database = "project";
     static PostgreSQLConnection p1 = new PostgreSQLConnection(host, port, username, password, database);
 
