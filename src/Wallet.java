@@ -20,9 +20,16 @@ public class Wallet {
         generateKeyPair();
     }
 
-    public Wallet() throws PSQLException {
+    public Wallet() throws Exception {
         id = ++mainId;
         generateKeyPair();
+        saveDB();
+    }
+
+    public Wallet(String privateKeyS, String publicKeyS) throws Exception {
+        id = ++mainId;
+        privateKey = StringUtil.convertStringToPRK(privateKeyS);
+        publicKey = StringUtil.convertStringToPUK(publicKeyS);
         saveDB();
     }
 
@@ -33,15 +40,15 @@ public class Wallet {
 
     }
 
-    public static void saveDB() throws PSQLException {
-        String save = "insert into wallet values ('" + id + "','" + StringUtil.getStringFromKey(privateKey) +
-                "','" + StringUtil.getStringFromKey(publicKey) + "');";
+    public static void saveDB() throws Exception {
+        String save = "insert into wallet values ('" + id + "','" + StringUtil.encrypt(StringUtil.getStringFromKey(privateKey), NoobChain.keyPair.getPublic()) +
+                "','" + StringUtil.encrypt(StringUtil.getStringFromKey(publicKey), NoobChain.keyPair.getPublic()) + "');";
         engine.p1.getTable(save);
     }
 
-	public void generateKeyPair() {
-		try {
-			Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    public void generateKeyPair() {
+        try {
+            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             // Initialize the key generator and generate a KeyPair
             keyGen.initialize(1024); //256
@@ -51,9 +58,9 @@ public class Wallet {
             this.publicKey = keyPair.getPublic();
 
         }catch(Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+            throw new RuntimeException(e);
+        }
+    }
 
     public int getId() {
         return id;
@@ -72,7 +79,7 @@ public class Wallet {
     }
 
     public Transaction sendFunds(PublicKey _recipient, float value) {
-        if (getBalance() < value) {
+        if (getBalance() < value + NoobChain.mainManager.getTransactionFee()) {
             System.out.println("Not Enough funds to send transaction. Transaction Discarded.");
             return null;
         }

@@ -56,6 +56,7 @@ class PostgreSQLConnection {
                     result += formatedValue + ",";
                     i++;
                 }
+                result += "?";
             }
             this.disconnect();
             return result;

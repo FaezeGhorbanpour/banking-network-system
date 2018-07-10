@@ -2,6 +2,7 @@ import org.postgresql.util.PSQLException;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 
 public class engine {
 
@@ -35,19 +36,19 @@ public class engine {
         return allmainManager.equals("");
     }
 
-    public static String login(String userName, String password) {
-        String check = "select walletId from mainManager where userName = '" + userName + "' and password = '" + password + "';";
+    public static String login(String userName, String password) throws Exception {
+        String check = "select walletId from mainManager where userName = '" + userName + "' and password = '" + StringUtil.encrypt(password, NoobChain.keyPair.getPublic()) + "';";
         String table = p1.getResults(check);
         if (!table.equals("")) {
             return "1," + Integer.parseInt(table.split(",")[0]);
         }
 
-        check = "select walletId from bank where userName = '" + userName + "' and password = '" + password + "';";
+        check = "select walletId from bank where userName = '" + userName + "' and password = '" + StringUtil.encrypt(password, NoobChain.keyPair.getPublic()) + "';";
         table = p1.getResults(check);
         if (!table.equals(""))
             return "2," + Integer.parseInt(table.split(",")[0]);
 
-        check = "select walletId from client where userName = '" + userName + "' and password = '" + password + "';";
+        check = "select walletId from client where userName = '" + userName + "' and password = '" + StringUtil.encrypt(password, NoobChain.keyPair.getPublic()) + "';";
         table = p1.getResults(check);
         if (!table.equals(""))
             return "3," + Integer.parseInt(table.split(",")[0]);
@@ -60,6 +61,11 @@ public class engine {
         return p1.getResults(allBank);
     }
 
+    public static String getMainManager() {
+        String allmainManager = "select * from mainManager";
+        return p1.getResults(allmainManager);
+    }
+
     public static String getAllCustomer() {
         String allCustomer = "select * from client";
         return p1.getResults(allCustomer);
@@ -70,16 +76,14 @@ public class engine {
         return p1.getResults(bank_search).split(",")[0];
     }
 
-    public static String getBankcustomer(String bankName) {
-        String res = "";
-        String customer = "select username, name, id, bankName from client";
-        String allCustomer = p1.getTable(customer);
+    public static ArrayList<String> getBankcustomer(String bankName) {
+        ArrayList<String> res = new ArrayList<>();
+        String customer = "select username, walletId from client where bankName = '" + bankName + "';";
+        String allCustomer = p1.getResults(customer);
         if (!allCustomer.equals("")) {
-            String[] allCustomers = allCustomer.split("\\n");
+            String[] allCustomers = allCustomer.split("\\?");
             for (int i = 0; i < allCustomers.length; i++) {
-                if (allCustomers[i].contains(bankName)) {
-                    res += allCustomers[i] + "\n";
-                }
+                res.add(allCustomers[i].substring(0, allCustomers[i].length() - 1));
             }
         }
         return res;
@@ -89,15 +93,15 @@ public class engine {
         String walletID = "select walletId from wallet";
         String walletIDs = p1.getResults(walletID);
         if (!walletIDs.equals("")) {
-            String[] strings = walletIDs.split(",");
-            return Integer.parseInt(strings[strings.length - 1]);
+            String[] strings = walletIDs.split("\\?");
+            return Integer.parseInt(strings[strings.length - 1].split(",")[0]);
         }
         return 0;
     }
 
     public static Wallet getWallet(int walletID) throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
         String walletQuery = "select * from wallet where walletId = " + walletID + ";";
-        String[] walletOut = p1.getResults(walletQuery).split(",");
+        String[] walletOut = p1.getResults(walletQuery).split("\\?")[0].split(",");
         return new Wallet(Integer.parseInt(walletOut[0]), walletOut[1], walletOut[2]);
     }
 
@@ -111,8 +115,8 @@ public class engine {
         return p1.getResults(walletQuery).split(",")[0];
     }
 
-    public static Wallet getWallet(String pubKey) throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
-        String walletQuery = "select * from wallet where publicKey = " + pubKey + ";";
+    public static Wallet getWallet(String pubKey) throws Exception {
+        String walletQuery = "select * from wallet where publicKey = " + StringUtil.encrypt(pubKey, NoobChain.keyPair.getPublic()) + ";";
         String[] walletOut = engine.p1.getResults(walletQuery).split(",");
         return new Wallet(Integer.parseInt(walletOut[0]), walletOut[1], walletOut[2]);
     }

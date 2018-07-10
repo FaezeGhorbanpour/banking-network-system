@@ -1,8 +1,3 @@
-import org.postgresql.util.PSQLException;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
 public class Customer {
 
     private String id;
@@ -10,15 +5,15 @@ public class Customer {
     private Wallet wallet;
     private Bank bank;
 
-    public Customer(String id, String password, Bank bank) throws PSQLException {
+    public Customer(String id, String password, Bank bank) throws Exception {
         this.id = id;
         this.password = password;
         this.bank = bank;
-        this.wallet = new Wallet(10);
+        this.wallet = new Wallet();
         saveDB();
     }
 
-    public Customer(String id, String password, Bank bank, int walletID) throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public Customer(String id, String password, Bank bank, int walletID) throws Exception {
         this.id = id;
         this.password = password;
         this.bank = bank;
@@ -26,8 +21,8 @@ public class Customer {
         saveDB();
     }
 
-    public void saveDB() {
-        String save = "insert into client values ('" + id + "','" + password + "','" + bank.getName() + "','" + wallet.getId() + "');";
+    public void saveDB() throws Exception {
+        String save = "insert into client values ('" + id + "','" + StringUtil.encrypt(password, NoobChain.keyPair.getPublic()) + "','" + bank.getName() + "','" + wallet.getId() + "');";
         engine.p1.getTable(save);
     }
 

@@ -23,12 +23,13 @@ public class Bank implements Runnable {
 
 
     //Bank Constructor.
-    public Bank(String user, String password, String name, String token) throws PSQLException {
+    public Bank(String user, String password, String name, String token) throws Exception {
         this.user = user;
         this.password = password;
         this.name = name;
-        this.wallet = new Wallet(10);
+        this.wallet = new Wallet();
         this.token = token;
+
         saveDB();
     }
 
@@ -42,8 +43,8 @@ public class Bank implements Runnable {
         this.token = engine.p1.getResults(query).split(",")[0];
     }
 
-    public void saveDB() {
-        String save = "insert into bank values ('" + user + "','" + password + "','" + name + "','" + token + "','" + wallet.getId() + "');";
+    public void saveDB() throws Exception {
+        String save = "insert into bank values ('" + user + "','" + StringUtil.encrypt(password, NoobChain.keyPair.getPublic()) + "','" + name + "','" + token + "','" + wallet.getId() + "');";
         engine.p1.getTable(save);
     }
 
@@ -92,18 +93,24 @@ public class Bank implements Runnable {
                             invaledTransaction.get(transaction.reciepient).add(transaction);
                         }
                     }
-                    else
+                    else {
                         number++;
+                        TransactionOutput transactionOutput = new TransactionOutput(wallet.getPublicKey(), NoobChain.mainManager.getTransactionFee(), transaction.transactionId);
+                        transaction.outputs.add(transactionOutput);
+                        NoobChain.UTXOs.put(transactionOutput.id, transactionOutput);
+                    }
 
                 }
                 if (numberOfTransaction == NoobChain.mainManager.getNumberOfBlock() - 1) {
                     number = 0;
-                    Block lastBlock = NoobChain.blockchain.get(NoobChain.blockchain.size() - 1);
-                    block.setPreviousHash(lastBlock.getHash());
-                    block.mineBlock(NoobChain.mainManager.getDifficulty());
+                    if (NoobChain.status == 0) {
+                        NoobChain.status = 1;
+                        Block lastBlock = NoobChain.blockchain.get(NoobChain.blockchain.size() - 1);
+                        block.setPreviousHash(lastBlock.getHash());
+                        block.mineBlock(NoobChain.mainManager.getDifficulty());
+                        NoobChain.status = 0;
+                    }
                 }
-
-
 
             }
             if (status == 2)

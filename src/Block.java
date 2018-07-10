@@ -10,13 +10,13 @@ public class Block {
 	private long timeStamp; //as number of milliseconds since 1/1/1970.
 	private int nonce;
 
-	//Block Constructor.  
+	//Block Constructor.
 	public Block(String previousHash ) {
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
 		this.hash = calculateHash(); //Making sure we do this after we set the other values.
 	}
-	
+
 	//Calculate new hash based on blocks contents
 	public String calculateHash() {
 		return StringUtil.applySha256(
@@ -26,22 +26,22 @@ public class Block {
 						merkleRoot
 		);
 	}
-	
+
 	//Increases nonce value until hash target is reached.
 	public void mineBlock(int difficulty) {
 		merkleRoot = StringUtil.getMerkleRoot(transactions);
-		String target = StringUtil.getDificultyString(difficulty); //Create a string with difficulty * "0" 
+		String target = StringUtil.getDificultyString(difficulty); //Create a string with difficulty * "0"
 		while(!hash.substring( 0, difficulty).equals(target)) {
 			nonce ++;
 			hash = calculateHash();
 		}
 		System.out.println("Block Mined!!! : " + hash);
 	}
-	
+
 	//Add transactions to this block
 	public boolean addTransaction(Transaction transaction) {
 		//process transaction and check if valid, unless block is genesis block then ignore.
-		if(transaction == null) return false;		
+		if (transaction == null) return false;
 		if((!"0".equals(previousHash))) {
 			if (!transaction.processTransaction()) {
 				System.out.println("Transaction failed to process. Discarded.");

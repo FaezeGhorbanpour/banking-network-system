@@ -18,10 +18,10 @@ public class MainBank {
     private float maxLoan;
 
 
-    public MainBank(String user, String password) throws PSQLException {
+    public MainBank(String user, String password) throws Exception {
         this.user = user;
         this.password = password;
-        wallet = new Wallet(10);
+        wallet = new Wallet();
         tokens = new ArrayList<>();
         this.difficulty = 0;
         this.numberOfBlock = 0;
@@ -48,8 +48,8 @@ public class MainBank {
         this.maxLoan = Float.parseFloat(engine.p1.getResults(query).split(",")[0]);
     }
 
-    public void saveDB() {
-        String save = "insert into mainManager values ('" + user + "','" + password + "','" + wallet.getId() +
+    public void saveDB() throws Exception {
+        String save = "insert into mainManager values ('" + user + "','" + StringUtil.encrypt(password, NoobChain.keyPair.getPublic()) + "','" + wallet.getId() +
                 "','" + difficulty + "','" + numberOfBlock + "','" + transactionFee + "','" + miningReward +
                 "','" + maxLoan + "');";
         engine.p1.getTable(save);
@@ -151,5 +151,6 @@ public class MainBank {
     public float getBalance() {
         return wallet.getBalance();
     }
+
 
 }

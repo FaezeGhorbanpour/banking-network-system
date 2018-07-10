@@ -1,7 +1,7 @@
 import com.google.gson.GsonBuilder;
 import org.postgresql.util.PSQLException;
 
-import java.io.IOException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -15,6 +15,7 @@ import static java.lang.System.out;
 public class NoobChain {
 
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
+    public static int status = 0;
     public static HashMap<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>();
 
     public static float minimumTransaction = 0.1f;
@@ -30,7 +31,11 @@ public class NoobChain {
 
     public static int type = -1;
 
-    public static void main(String[] args) throws IOException, PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static KeyPair keyPair;
+
+    public static void main(String[] args) throws Exception {
+
+        keyPair = StringUtil.getKeyPair();
 
         System.out.println("Welcome to blockchain");
         System.out.println("Please enter your command");
@@ -38,8 +43,10 @@ public class NoobChain {
         Scanner scanner = new Scanner(System.in);
         String input;
 
+        fillMainManager();
         fillBank();
         fillCustomer();
+
 
         while (true) {
             input = scanner.nextLine();
@@ -88,7 +95,7 @@ public class NoobChain {
 
             if (input.contains("Get") && !input.equals("Get Balance")) {
                 String[] strings = input.split(" ");
-                blockchain.add(GsonReader.readJson(strings[1]));
+                GsonReader.readJson(strings[1]);
             }
 
             else if (input.equals("Show PubK PriK")) {
@@ -109,10 +116,10 @@ public class NoobChain {
             else if (input.contains("Create Bank")) {
                 String[] strings = input.split(" ");
                 if (mainManager.getTokens().contains(strings[5])) {
+                    mainManager.getTokens().remove(strings[5]);
                     onlineBank = new Bank(strings[2], strings[3], strings[4], strings[5]);
                     banks.add(onlineBank);
                     type = engine.signup(strings[2], strings[3], 2);
-
                     Thread bankThread = new Thread(onlineBank);
                     bankThread.start();
                     System.out.println("successful sign up");
@@ -127,7 +134,6 @@ public class NoobChain {
                 onlineCustomer = new Customer(strings[2], strings[3], customerBank);
                 customers.add(onlineCustomer);
                 type = engine.signup(strings[2], strings[3], 3);
-
                 System.out.println("successful sign up");
                 System.out.println("Wallet ID: " + onlineCustomer.getWallet().getId());
             }
@@ -188,7 +194,10 @@ public class NoobChain {
                     PublicKey recevierpk = StringUtil.convertStringToPUK(engine.getWalletPubK(receiverWalletID));
                     Transaction transaction = makeTransaction(payment, recevierpk, onlineCustomer.getWallet());
                     if (transaction != null)
-                        Bank.rawTransaction.add(transaction);
+                        if (Bank.status == 0)
+                            Bank.rawTransaction.add(transaction);
+                        else
+                            Bank.secondRawTransaction.add(transaction);
 
                 }
                 else {
@@ -202,11 +211,17 @@ public class NoobChain {
                 String senderPUK = strings[3];
                 String senderPRK = strings[4];
                 String receiverPUK = strings[6];
-                Wallet senderWallet = engine.getWallet(senderPUK);
-                Wallet receiverWallet = engine.getWallet(receiverPUK);
-                Transaction transaction = makeTransaction(payment, receiverWallet.getPublicKey(), senderWallet);
+//                Wallet senderWallet = engine.getWallet(senderPUK);
+//                Wallet receiverWallet = engine.getWallet(receiverPUK);
+//                Transaction transaction = makeTransaction(payment, receiverWallet.getPublicKey(), senderWallet);
+                Wallet senderWallet = new Wallet(senderPRK, senderPUK);
+                PublicKey receiverPublicKey = StringUtil.convertStringToPUK(receiverPUK);
+                Transaction transaction = makeTransaction(payment, receiverPublicKey, senderWallet);
                 if (transaction != null)
-                    Bank.rawTransaction.add(transaction);
+                    if (Bank.status == 0)
+                        Bank.rawTransaction.add(transaction);
+                    else
+                        Bank.secondRawTransaction.add(transaction);
 
             }
 
@@ -231,7 +246,7 @@ public class NoobChain {
                 }
             }
 
-            else if (input.equals("Show Transaction")) {
+            else if (input.equals("Show Transactions")) {
                 ArrayList<ArrayList<Transaction>> result = null;
                 if (type == 3) {
                     result = getValidTransaction(onlineCustomer.getWallet());
@@ -243,10 +258,15 @@ public class NoobChain {
                     out.println("Invalid command");
                     continue;
                 }
-                out.println("Input Transaction:");
-                printTransaction(result.get(0));
-                out.println("Output Transaction:");
-                printTransaction(result.get(1));
+                if (result.get(0).size() != 0) {
+                    out.println("Input Transaction: ");
+                    printTransaction(result.get(0));
+                    out.println("Output Transaction: ");
+                    printTransaction(result.get(1));
+                }
+                else {
+                    System.out.println("No Transaction Yet!");
+                }
 
             }
 
@@ -261,6 +281,7 @@ public class NoobChain {
                 out.println("Invalid Transaction: ");
                 out.println(invalidTransaction);
             }
+
             else if (input.equals("Show BlockChain Balance")) {
                 if (type == 1) {
                     System.out.println("BlockChain Balance is :");
@@ -269,10 +290,14 @@ public class NoobChain {
                 else
                     out.println("Permission Deny");
             }
-            else if (input.contains("Show Customers")) {
-                if (type == 1) {
-                    System.out.println("Table of Customer bank: " + onlineBank.getName());
-                    System.out.println(engine.getBankcustomer(onlineBank.getName()));
+
+            else if (input.equals("Show Customers")) {
+                if (type == 2) {
+                    System.out.println("Table of Customer of " + onlineBank.getName() + " bank: (username, walletId)");
+                    ArrayList<String> res = engine.getBankcustomer(onlineBank.getName());
+                    for (int i = 0; i < res.size(); i++) {
+                        System.out.println(res.get(i));
+                    }
                 }
                 else {
                     System.out.println("Permission Deny");
@@ -290,22 +315,18 @@ public class NoobChain {
 
     }
 
-    private static float showWholeBalance() {
-        float wholeBalance = 0;
-        for (Bank bank : banks) {
-            wholeBalance += bank.getBalance();
+    public static void fillMainManager() throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
+        String temp = engine.getMainManager();
+        if (!temp.equals("")) {
+            String[] strings = temp.split(",");
+            mainManager = new MainBank(strings[0], strings[1], Integer.parseInt(strings[2]));
         }
-        for (Customer customer : customers) {
-            wholeBalance += customer.getBalance();
-        }
-        wholeBalance += mainManager.getBalance();
-        return wholeBalance;
     }
 
     public static void fillBank() throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
         String allBank = engine.getAllBank();
         if (!allBank.equals("")) {
-            String[] allBanks = allBank.split("\\n");
+            String[] allBanks = allBank.split("\\?");
             for (int i = 0; i < allBanks.length; i++) {
                 String[] strings = allBanks[i].split(",");
                 Bank bank = new Bank(strings[0], strings[1], Integer.parseInt(strings[4]));
@@ -314,10 +335,10 @@ public class NoobChain {
         }
     }
 
-    public static void fillCustomer() throws PSQLException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static void fillCustomer() throws Exception {
         String allCustomer = engine.getAllCustomer();
         if (!allCustomer.equals("")) {
-            String[] allCustomers = allCustomer.split("\\n");
+            String[] allCustomers = allCustomer.split("\\?");
             for (int i = 0; i < allCustomers.length; i++) {
                 String[] strings = allCustomers[i].split(",");
                 Customer customer = new Customer(strings[0], strings[1], getBank(strings[2]), Integer.parseInt(strings[3]));
@@ -505,6 +526,18 @@ public class NoobChain {
             if (customer.getBank().getUser().equals(bank.getUser()))
                 invalidTransaction.addAll(getInvalidTransactionCustomer(customer));
         return invalidTransaction;
+    }
+
+    private static float showWholeBalance() {
+        float wholeBalance = 0;
+        for (Bank bank : banks) {
+            wholeBalance += bank.getBalance();
+        }
+        for (Customer customer : customers) {
+            wholeBalance += customer.getBalance();
+        }
+        wholeBalance += mainManager.getBalance();
+        return wholeBalance;
     }
 
 }

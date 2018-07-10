@@ -4,30 +4,29 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Transaction {
-	
+
 	public String transactionId; //Contains a hash of transaction*
 	public PublicKey sender; //Senders address/public key.
 	public PublicKey reciepient; //Recipients address/public key.
 	public float value; //Contains the amount we wish to send to the recipient.
-    public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
-    private long timeStamp;
+	private static int sequence = 0; //A rough count of how many transactions have been generated
+	public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
 	private float cost;
 
 	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
 	public ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
-	
-	private static int sequence = 0; //A rough count of how many transactions have been generated 
-	
-	// Constructor: 
+	private long timeStamp;
+
+	// Constructor:
 	public Transaction(PublicKey from, PublicKey to, float value,  ArrayList<TransactionInput> inputs) {
 		this.sender = from;
 		this.reciepient = to;
 		this.value = value;
 		this.inputs = inputs;
-        this.timeStamp = new Date().getTime();
-        this.cost = NoobChain.mainManager.getTransactionFee();
-    }
-	
+		this.timeStamp = new Date().getTime();
+		this.cost = NoobChain.mainManager.getTransactionFee();
+	}
+
 	public boolean processTransaction() {
 
 		if (!verifySignature()) {
@@ -40,10 +39,6 @@ public class Transaction {
 			i.UTXO = NoobChain.UTXOs.get(i.transactionOutputId);
 		}
 
-		if (value < 0) {
-			System.out.println("Wanted Amount is Negative ! ");
-			return false;
-		}
 		//Checks if transaction is valid:
 		if(getInputsValue() < NoobChain.minimumTransaction) {
 			System.out.println("Transaction Inputs too small: " + getInputsValue());
@@ -51,26 +46,45 @@ public class Transaction {
 			return false;
 		}
 
+		for (TransactionInput i : inputs) {
+			if (i.UTXO == null) continue; //if Transaction can't be found skip it
+			if (NoobChain.UTXOs.get(i.UTXO.id) != null) {
+				System.out.println("Invalid Transaction!");
+				return false;
+			}
+
+		}
+
+		try {
+			Wallet wallet = engine.getWallet(StringUtil.getStringFromKey(sender));
+			if (wallet.getBalance() < value + cost) {
+				System.out.println("Request is less than wallet inventory");
+			}
+
+		} catch (Exception e) {
+
+		}
 		//Generate transaction outputs:
 		float leftOver = getInputsValue() - value - cost;
 		transactionId = calulateHash();
 		outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
-        outputs.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over 'change' back to sender
+		outputs.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over 'change' back to sender
 
 		//Add outputs to Unspent list
 		for(TransactionOutput o : outputs) {
 			NoobChain.UTXOs.put(o.id , o);
 		}
 
+
 		//Remove transaction inputs from utxo lists as spent:
 		for(TransactionInput i : inputs) {
-            if (i.UTXO == null) continue; //if Transaction can't be found skip it
-            NoobChain.UTXOs.remove(i.UTXO.id);
+			if (i.UTXO == null) continue; //if Transaction can't be found skip it
+			NoobChain.UTXOs.remove(i.UTXO.id);
 		}
 
-        return true;
+		return true;
 	}
-	
+
 	public float getInputsValue() {
 		float total = 0;
 		for(TransactionInput i : inputs) {
@@ -79,17 +93,17 @@ public class Transaction {
 		}
 		return total;
 	}
-	
+
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-        signature = StringUtil.applyECDSASig(privateKey, data);
-    }
-	
+		signature = StringUtil.applyECDSASig(privateKey, data);
+	}
+
 	public boolean verifySignature() {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-        return StringUtil.verifyECDSASig(sender, data, signature);
-    }
-	
+		return StringUtil.verifyECDSASig(sender, data, signature);
+	}
+
 	public float getOutputsValue() {
 		float total = 0;
 		for(TransactionOutput o : outputs) {
@@ -97,21 +111,21 @@ public class Transaction {
 		}
 		return total;
 	}
-	
+
 	private String calulateHash() {
 		sequence++; //increase the sequence to avoid 2 identical transactions having the same hash
 		return StringUtil.applySha256(
 				StringUtil.getStringFromKey(sender) +
-				StringUtil.getStringFromKey(reciepient) +
-				Float.toString(value) + sequence
-				);
+						StringUtil.getStringFromKey(reciepient) +
+						Float.toString(value) + sequence
+		);
 	}
 
-    public String toString() {
-        return "Sender Public Key: " + sender + "\n"
-                + "Receiver Public Key: " + reciepient + "\n"
-                + "Value: " + value + "\n"
-                + "Time: " + timeStamp + "\n"
-                + "Cost: " + cost + "\n";
-    }
+	public String toString() {
+		return "Sender Public Key: " + sender + "\n"
+				+ "Receiver Public Key: " + reciepient + "\n"
+				+ "Value: " + value + "\n"
+				+ "Time: " + timeStamp + "\n"
+				+ "Cost: " + cost + "\n";
+	}
 }
