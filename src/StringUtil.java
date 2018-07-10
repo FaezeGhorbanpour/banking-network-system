@@ -24,7 +24,7 @@ public class StringUtil {
 	}
 
 	public static KeyPair LoadKeyPair() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-		String path = "D:\\Data and network security\\project\\blockchain-project\\source\\";
+		String path = "";
 
 		// Read Public Key.
 		File filePublicKey = new File(path + "public.key");

@@ -55,6 +55,7 @@ public class GsonReader {
                                 , transactionOutputSample.value, transactionOutputSample.parentTransactionId);
                         transactionOutput.id = transactionOutputSample.id;
                         newTransactionOutput.add(transactionOutput);
+                        NoobChain.UTXOs.put(transactionOutput.id, transactionOutput);
                     }
                 }
                 transaction.outputs = newTransactionOutput;

@@ -23,7 +23,7 @@ public class Wallet {
     public Wallet() throws Exception {
         id = ++mainId;
         generateKeyPair();
-        saveDB();
+//        saveDB();
     }
 
     public Wallet(String privateKeyS, String publicKeyS) throws Exception {

@@ -1,6 +1,6 @@
 {
   "hash": "000a840866126e831c70231048966da9bb6e2e5308b0128e77871bf082d95788fd313c57aaeb58b8327f570bea9c436a76e9dd00aa613f7a884e30f8febb5257",
-  "prev_block": "0",
+  "prevHash": "0",
   "nonce": 1575,
   "merkle_root": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
   "time_stamp": 1527861477410,
@@ -11,7 +11,7 @@
       "value": 100,
       "id": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
       "sender_public_key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVjWuRXe+XiHl8/gB2iXycQ/kQUykvy/3nd2e1wJRMkzECzhxhHvSrW0HC0jHRoN7jQQlR8faqTgW86BLjACmQjCo+BJfIYRAoPxd2RcM/Y9105PT3cOykmUIjyK6p0SkX8BHdqbGuI0DIRL+D06pHVpKrJ88XqeOaNAwFxyxq6wIDAQAB",
-      "receiver_public_key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyrHvUNwWQ9yEBJ5Cn1la4paiGpt6yip995PTUgN0zn7ELMXZF85prIk7FD3nPWAKNz1lKzPHTAxB1nKQWZ6/I0kQxwHcMdFE/XxPxHHgnsueQXX1Rj2sCKluj7jgTr6RlvCv6m8MdP7nd4MuLtB+WcI7OstFwcqVLBM6qUIzIFwIDAQAB",
+      "receiver_public_key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCAG2L8wp/9NE/hT00OC1wmG6DSk/aogyXO0R3TzzwBGAvKg1FeYNiBpZXSZbA7vIsFyKJWYt0A+UBOLn7kNZuMVFDzShNAiNZI4ikHYImdm+/j1mZdCp8Y+y9XSa4Pf+7lTIlDbjXOjlBm2lrFaOAgRVPqGTPd/Pt9RSTc5ibBNwIDAQAB",
       "signature": "Enac641VTjEKpP7BKC0/H9JNDCg+Fb341ORnf3FqK4nk6grFVlBhKoG8qxzHATwSqviMDAhzVDZH1bH4vdZT0cw4nAIDt4d+653TbMTle8/3txcw+dm4LVyJRylUyVCBZogcRyIY0lSbb9XHrozp1Z3/RpT0cE5P2NfQfIC1emc=",
       "input": [
         {}
@@ -20,10 +20,10 @@
         {
           "id": "d8302594ca867dca92536c79ef67a0dc913b95bfaf190e5b071bcdf648bca078ddc2ea0d584d30a5ac02fc4596682496ee5ac06161c03f09e09fbb643d8a5479",
           "value": 100,
-          "parent_transaction_id": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
-          "recipient_public_key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyrHvUNwWQ9yEBJ5Cn1la4paiGpt6yip995PTUgN0zn7ELMXZF85prIk7FD3nPWAKNz1lKzPHTAxB1nKQWZ6/I0kQxwHcMdFE/XxPxHHgnsueQXX1Rj2sCKluj7jgTr6RlvCv6m8MdP7nd4MuLtB+WcI7OstFwcqVLBM6qUIzIFwIDAQAB",
+          "parentTransactionId": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
+          "recipient": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCAG2L8wp/9NE/hT00OC1wmG6DSk/aogyXO0R3TzzwBGAvKg1FeYNiBpZXSZbA7vIsFyKJWYt0A+UBOLn7kNZuMVFDzShNAiNZI4ikHYImdm+/j1mZdCp8Y+y9XSa4Pf+7lTIlDbjXOjlBm2lrFaOAgRVPqGTPd/Pt9RSTc5ibBNwIDAQAB",
           "spent": false
-        }
+        },
       ]
     }
   ]
